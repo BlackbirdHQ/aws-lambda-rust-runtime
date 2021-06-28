@@ -170,7 +170,7 @@ where
                         .into_req()
                     }
                     Err(err) => {
-                        error!("{}", err); // logs the error in CloudWatch
+                        error!("RESULT Err {}", err); // logs the error in CloudWatch
                         EventErrorRequest {
                             request_id,
                             diagnostic: Diagnostic {
@@ -182,7 +182,7 @@ where
                     }
                 },
                 Err(err) if err.is_panic() => {
-                    error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
+                    error!("PANIC Err {:?}", err); // inconsistent with other log record formats - to be reviewed
                     EventErrorRequest {
                         request_id,
                         diagnostic: Diagnostic {
@@ -299,6 +299,9 @@ where
 {
     trace!("Loading config from env");
     let config = Config::from_env()?;
+    for v in std::env::vars() {
+        dbg!(v);
+    }
     let uri = config.endpoint.try_into().expect("Unable to convert to URL");
     let runtime = Runtime::builder()
         .with_connector(HttpConnector::new())
