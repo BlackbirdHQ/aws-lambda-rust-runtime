@@ -87,6 +87,7 @@ pub enum LambdaRequest<'a> {
         #[serde(default)]
         is_base64_encoded: bool,
         request_context: ApiGatewayRequestContext,
+        resource: Cow<'a, str>,
     },
 }
 
@@ -155,16 +156,20 @@ pub struct ApiGatewayRequestContext {
     /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
     /// The ID that API Gateway assigns to the API request.
-    pub request_id: String,
+    pub request_id: Option<String>,
     /// The path to your resource. For example, for the non-proxy request URI of `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`, The $context.resourcePath value is /root/child.
-    pub resource_path: String,
+    pub resource_path: Option<String>,
     /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub http_method: String,
     /// The stringified value of the specified key-value pair of the context map returned from an API Gateway Lambda authorizer function.
     #[serde(default)]
     pub authorizer: HashMap<String, Value>,
     /// The identifier API Gateway assigns to your API.
-    pub api_id: String,
+    pub api_id: Option<String>,
+    pub protocol: String,
+    pub path: String,
+    pub request_time: String,
+    pub request_time_epoch: usize,
     /// Cofnito identity information
     pub identity: Identity,
 }
@@ -436,6 +441,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 body,
                 is_base64_encoded,
                 request_context,
+                resource,
             } => {
                 let builder = http::Request::builder()
                     .method(http_method)
